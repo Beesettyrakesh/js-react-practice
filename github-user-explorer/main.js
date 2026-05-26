@@ -1,13 +1,13 @@
 import { fetchRepos, fetchUser, searchUsers } from "./app.js";
 
-const button = document.getElementById("search-Btn");
+const searchButton = document.getElementById("search-Btn");
 const searchInput = document.getElementById("search-box");
 const resultDiv = document.getElementById("result-div");
 let searchKey = "";
+let searchedUsers = [];
 
 searchInput.addEventListener("input", extractSearchKey);
-
-button.addEventListener("click", fetchUsers);
+searchButton.addEventListener("click", fetchUsers);
 
 function extractSearchKey(event) {
   searchKey = event.target.value.toLowerCase();
@@ -15,23 +15,38 @@ function extractSearchKey(event) {
 
 async function fetchUsers() {
   resultDiv.replaceChildren();
-  const users = await searchUsers(searchKey);
-  if (users.items.length === 0) {
-    const errorMsg = document.createElement("p");
-    errorMsg.innerHTML = "No users found";
-    resultDiv.appendChild(errorMsg);
-  } else {
-    renderUsers(users.items);
+  searchButton.disabled = true;
+
+  const loadingMsg = document.createElement("p");
+  loadingMsg.textContent = "Loading...";
+  resultDiv.appendChild(loadingMsg);
+
+  try {
+    const users = await searchUsers(searchKey);
+    searchedUsers = users.items;
+
+    resultDiv.replaceChildren();
+
+    if (users.items.length === 0) {
+      resultDiv.textContent = "No users found";
+    } else {
+      renderUsers(users.items);
+    }
+  } catch (err) {
+    resultDiv.textContent = err.message;
+  } finally {
+    searchButton.disabled = false;
   }
 }
 
 function renderUsers(users) {
-  users.map((user) => {
+  resultDiv.replaceChildren();
+  users.forEach((user) => {
     const userButton = document.createElement("button");
 
     userButton.classList.add("user-btn");
 
-    userButton.innerHTML = user.login;
+    userButton.textContent = user.login;
     resultDiv.appendChild(userButton);
 
     userButton.addEventListener("click", () => {
@@ -41,10 +56,22 @@ function renderUsers(users) {
 }
 
 async function getUserInfo(username) {
-  const [{ avatar_url: avatar, login, bio, followers }, reposData] =
-    await Promise.all([fetchUser(username), fetchRepos(username)]);
+  resultDiv.replaceChildren();
+  searchButton.disabled = true;
 
-  renderUserInfo(avatar, login, bio, followers, reposData);
+  const loadingMsg = document.createElement("p");
+  loadingMsg.textContent = "Loading...";
+  resultDiv.appendChild(loadingMsg);
+
+  try {
+    const [{ avatar_url: avatar, login, bio, followers }, reposData] =
+      await Promise.all([fetchUser(username), fetchRepos(username)]);
+    renderUserInfo(avatar, login, bio, followers, reposData);
+  } catch (err) {
+    resultDiv.textContent = err.message;
+  } finally {
+    searchButton.disabled = false;
+  }
 }
 
 function renderUserInfo(avatar, login, bio, followers, repos) {
@@ -56,32 +83,38 @@ function renderUserInfo(avatar, login, bio, followers, repos) {
   const userFollowers = document.createElement("p");
   const userRepos = document.createElement("div");
   const backBtn = document.createElement("button");
+  const repoHeading = document.createElement("h3");
 
   userAvatar.src = avatar;
   userAvatar.height = 200;
   userAvatar.width = 200;
-  userLogin.innerHTML = `Username: ${login}`;
-  userBio.innerHTML = `Bio: ${bio}`;
-  userFollowers.innerHTML = `Followers: ${followers}`;
-  backBtn.innerHTML = "Back";
+  userLogin.textContent = `Username: ${login}`;
+  userBio.textContent = `Bio: ${bio || "No bio available"}`;
+  userFollowers.textContent = `Followers: ${followers}`;
+  repoHeading.textContent = "Top 5 Repos";
+  backBtn.textContent = "Back to results";
 
-  repos.map((repo) => {
-    const repoInfo = document.createElement("p");
-    repoInfo.innerHTML = `Repository: ${repo.name} | Stars: ${repo.stargazers_count}`;
-    userRepos.appendChild(repoInfo);
-  });
+  if (repos.length === 0) {
+    const noReposMsg = document.createElement("p");
+    noReposMsg.textContent = "No repos found";
+    userRepos.appendChild(noReposMsg);
+  } else {
+    repos.forEach((repo) => {
+      const repoInfo = document.createElement("p");
+      repoInfo.textContent = `${repo.name} | ⭐ Stars: ${repo.stargazers_count}`;
+      userRepos.appendChild(repoInfo);
+    });
+  }
 
   resultDiv.appendChild(userAvatar);
   resultDiv.appendChild(userLogin);
   resultDiv.appendChild(userBio);
   resultDiv.appendChild(userFollowers);
+  resultDiv.appendChild(repoHeading);
   resultDiv.appendChild(userRepos);
   resultDiv.appendChild(backBtn);
 
-  backBtn.addEventListener("click", fetchUsers);
+  backBtn.addEventListener("click", () => {
+    renderUsers(searchedUsers);
+  });
 }
-
-// () => {
-//   searchInput.value = "";
-//   searchKey = "";
-// };

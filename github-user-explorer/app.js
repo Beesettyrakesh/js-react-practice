@@ -15,7 +15,7 @@ export async function fetchUser(username) {
     const data = await response.json();
     return data;
   } catch (err) {
-    console.error(err.message);
+    throw err;
   }
 }
 
@@ -32,7 +32,7 @@ export async function fetchRepos(username) {
     const data = await response.json();
     return data;
   } catch (err) {
-    console.error(err.message);
+    throw err;
   }
 }
 
@@ -46,7 +46,7 @@ export async function searchUsers(query) {
 
     const data = await response.json();
     return data;
-  } catch (error) {
-    console.log(error.message);
+  } catch (err) {
+    throw err;
   }
 }
