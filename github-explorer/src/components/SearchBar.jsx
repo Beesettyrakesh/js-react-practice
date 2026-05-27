@@ -1,29 +1,23 @@
-import { useRef } from "react";
-
-const SearchBar = ({ onSearch }) => {
-  const inputRef = useRef(null);
-
-  function handleSearch() {
-    onSearch(inputRef.current.value);
-  }
-
+const SearchBar = ({ searchKeyWord, onInputChange, onSearch, isLoading }) => {
   function handleKeyDown(event) {
     if (event.key === "Enter") {
-      handleSearch();
+      onSearch();
     }
   }
 
   return (
     <div>
-      <span>
-        <input
-          type="text"
-          placeholder="Search"
-          ref={inputRef}
-          onKeyDown={handleKeyDown}
-        />
-      </span>
-      <button onClick={handleSearch}>Search</button>
+      <input
+        type="text"
+        placeholder="Search"
+        value={searchKeyWord}
+        onChange={(event) => onInputChange(event.target.value)}
+        onKeyDown={handleKeyDown}
+      />
+
+      <button onClick={onSearch} disabled={isLoading}>
+        Search
+      </button>
     </div>
   );
 };
