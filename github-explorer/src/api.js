@@ -35,6 +35,6 @@ export async function searchUsers(query) {
     throw new Error("Something went wrong");
   }
 
-  const data = await response.json();
-  return data;
+  const { items } = await response.json();
+  return items;
 }
