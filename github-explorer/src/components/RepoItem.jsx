@@ -1,3 +1,4 @@
+//Props: repo (object)
 const RepoItem = ({ repo }) => {
   const { name, description, stargazers_count, html_url } = repo;
   return (

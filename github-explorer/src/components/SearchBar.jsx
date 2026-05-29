@@ -1,3 +1,4 @@
+// Props: searchKeyWord (string), onInputChange (function), onSearch (function), isLoading (boolean)
 const SearchBar = ({ searchKeyWord, onInputChange, onSearch, isLoading }) => {
   function handleKeyDown(event) {
     if (event.key === "Enter") {

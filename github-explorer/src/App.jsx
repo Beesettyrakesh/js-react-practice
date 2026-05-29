@@ -1,9 +1,7 @@
 import { useEffect, useState } from "react";
 import { fetchRepos, fetchUser, searchUsers } from "./api.js";
-import RepoList from "./components/RepoList";
 import SearchBar from "./components/SearchBar";
-import UserCard from "./components/UserCard";
-import UsersList from "./components/UsersList";
+import UserSearchResults from "./components/UserSearchResults.jsx";
 
 function App() {
   const [searchKeyWord, setSearchKeyWord] = useState("");
@@ -91,29 +89,16 @@ function App() {
         isLoading={isLoading}
       />
 
-      {error && <p>{error}</p>}
-      {isLoading && <p>Loading...</p>}
-
-      {!isLoading && selectedUser ? (
-        <>
-          <UserCard user={selectedUser} />
-          <RepoList repos={selectedRepos} />
-          <button onClick={handleBackBtn}>Back to results</button>
-        </>
-      ) : (
-        !isLoading &&
-        searchResults.length > 0 && (
-          <>
-            <h4>
-              Showing {searchResults.length} results for {searchKeyWord}
-            </h4>
-            <UsersList
-              searchResults={searchResults}
-              handleUserClick={handleUserClick}
-            />
-          </>
-        )
-      )}
+      <UserSearchResults
+        searchResults={searchResults}
+        selectedUser={selectedUser}
+        selectedRepos={selectedRepos}
+        isLoading={isLoading}
+        error={error}
+        onUserClick={handleUserClick}
+        onBack={handleBackBtn}
+        query={searchKeyWord}
+      />
     </div>
   );
 }

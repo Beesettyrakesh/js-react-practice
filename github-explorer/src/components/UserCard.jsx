@@ -1,3 +1,4 @@
+// Props: user (object)
 const UserCard = ({ user }) => {
   const { login, avatar_url, bio, followers } = user;
   return (

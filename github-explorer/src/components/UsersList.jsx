@@ -1,12 +1,13 @@
 import "../styles/UsersList.css";
 
-const UsersList = ({ searchResults, handleUserClick }) => {
+//Props: searchResults (array), onUserClick (function)
+const UsersList = ({ searchResults, onUserClick }) => {
   return (
     <div>
       {searchResults.map((result) => (
         <button
           className="user-btn"
-          onClick={() => handleUserClick(result.login)}
+          onClick={() => onUserClick(result.login)}
           key={result.id}
         >
           {result.login}
