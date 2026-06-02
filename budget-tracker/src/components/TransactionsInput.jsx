@@ -2,6 +2,9 @@ const TransactionsInput = ({
   transaction,
   onAddTransaction,
   onInputChange,
+  onSaveEdit,
+  onCancelEdit,
+  mode,
 }) => {
   return (
     <div style={{ marginBottom: "10px" }}>
@@ -10,8 +13,10 @@ const TransactionsInput = ({
         <input
           name="description"
           type="text"
+          placeholder="Description"
           value={transaction.description}
           onChange={onInputChange}
+          style={{ marginRight: "10px" }}
         />
       </label>
 
@@ -20,14 +25,21 @@ const TransactionsInput = ({
         <input
           name="amount"
           type="number"
+          placeholder="Amount"
           value={transaction.amount}
           onChange={onInputChange}
+          style={{ marginRight: "10px" }}
         />
       </label>
 
       <label>
         Type:
-        <select name="type" value={transaction.type} onChange={onInputChange}>
+        <select
+          name="type"
+          value={transaction.type}
+          onChange={onInputChange}
+          style={{ marginRight: "10px" }}
+        >
           <option value="income">Income</option>
           <option value="expense">Expense</option>
         </select>
@@ -38,14 +50,40 @@ const TransactionsInput = ({
         <input
           name="category"
           type="text"
+          placeholder="Category"
           value={transaction.category}
           onChange={onInputChange}
+          style={{ marginRight: "10px" }}
         />
       </label>
 
-      <button type="button" onClick={onAddTransaction}>
-        Add
-      </button>
+      {mode === "add" ? (
+        <button
+          type="button"
+          onClick={onAddTransaction}
+          style={{ marginRight: "10px" }}
+        >
+          Add
+        </button>
+      ) : (
+        <>
+          <button
+            type="button"
+            onClick={() => onCancelEdit()}
+            style={{ marginRight: "10px" }}
+          >
+            Cancel
+          </button>
+
+          <button
+            type="button"
+            onClick={() => onSaveEdit()}
+            style={{ marginRight: "10px" }}
+          >
+            Save
+          </button>
+        </>
+      )}
     </div>
   );
 };
