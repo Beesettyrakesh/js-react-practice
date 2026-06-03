@@ -8,24 +8,24 @@ const initialTransacationData = {
   id: "",
   description: "",
   amount: "",
-  type: "income",
+  type: "Income",
   category: "",
   createdAt: null,
 };
 
 function App() {
   const [transaction, setTransaction] = useState(initialTransacationData);
-  const [transactionList, settransactionList] = useState([]);
+  const [transactionList, setTransactionList] = useState([]);
   const [filter, setFilter] = useState("all");
   const [editingId, setEditingId] = useState(null);
   const [editTransaction, setEditTransaction] = useState(null);
 
   let filteredTransactions =
     filter === "income"
-      ? transactionList.filter((transaction) => transaction.type === "income")
+      ? transactionList.filter((transaction) => transaction.type === "Income")
       : filter === "expense"
         ? transactionList.filter(
-            (transaction) => transaction.type === "expense",
+            (transaction) => transaction.type === "Expense",
           )
         : transactionList;
 
@@ -37,8 +37,7 @@ function App() {
       createdAt: new Date(),
     };
 
-    setTransaction(newTransaction);
-    settransactionList((prev) => [...prev, newTransaction]);
+    setTransactionList((prev) => [...prev, newTransaction]);
     setTransaction(initialTransacationData);
   }
 
@@ -52,7 +51,7 @@ function App() {
   }
 
   function handleDeleteTransaction(transactionId) {
-    settransactionList((prev) =>
+    setTransactionList((prev) =>
       prev.filter((transactionItem) => transactionItem.id !== transactionId),
     );
   }
@@ -76,11 +75,16 @@ function App() {
   }
 
   function handleSaveEdit() {
+    const updatedTransaction = {
+      ...editTransaction,
+      amount: Number(editTransaction.amount),
+    };
+
     const updatedTransactions = transactionList.map((transaction) =>
-      transaction.id === editingId ? editTransaction : transaction,
+      transaction.id === editingId ? updatedTransaction : transaction,
     );
 
-    settransactionList(updatedTransactions);
+    setTransactionList(updatedTransactions);
     setEditingId(null);
     setEditTransaction(null);
   }
@@ -93,22 +97,22 @@ function App() {
   return (
     <>
       <div>
+        {transactionList.length > 0 ? (
+          <TransactionsSummary transactionList={transactionList} />
+        ) : (
+          <div style={{ marginBottom: "10px", fontWeight: "bold" }}>
+            <span style={{ marginRight: "10px" }}>Total Balance: 0</span>
+            <span style={{ marginRight: "10px" }}>Total Income: 0</span>
+            <span style={{ marginRight: "10px" }}>Total Expenses: 0</span>
+          </div>
+        )}
+
         <TransactionsInput
           transaction={transaction}
           onAddTransaction={handleAddTransaction}
           onInputChange={handleInputChange}
           mode="add"
         />
-
-        {transactionList.length > 0 ? (
-          <TransactionsSummary transactionList={transactionList} />
-        ) : (
-          <>
-            <span style={{ marginRight: "10px" }}>Total Balance: 0</span>
-            <span style={{ marginRight: "10px" }}>Total Income: 0</span>
-            <span style={{ marginRight: "10px" }}>Total Expenses: 0</span>
-          </>
-        )}
 
         {transactionList.length > 0 && (
           <FilterTransactionsBar

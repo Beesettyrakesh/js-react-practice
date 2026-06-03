@@ -15,7 +15,7 @@ const TransactionsSummary = ({ transactionList }) => {
   const balance = income - expenses;
 
   return (
-    <div>
+    <div style={{ marginBottom: "10px", fontWeight: "bold" }}>
       <span style={{ marginRight: "10px" }}>Total Balance: {balance}</span>
       <span style={{ marginRight: "10px" }}>Total Income: {income}</span>
       <span style={{ marginRight: "10px" }}>Total Expenses: {expenses}</span>

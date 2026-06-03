@@ -40,8 +40,8 @@ const TransactionsInput = ({
           onChange={onInputChange}
           style={{ marginRight: "10px" }}
         >
-          <option value="income">Income</option>
-          <option value="expense">Expense</option>
+          <option value="Income">Income</option>
+          <option value="Expense">Expense</option>
         </select>
       </label>
 
