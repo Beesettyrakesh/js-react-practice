@@ -1,4 +1,4 @@
-const dateFormatter = Intl.DateTimeFormat("en-IN");
+const dateFormatter = new Intl.DateTimeFormat("en-IN");
 
 const TransactionItem = ({ transaction, onTransactionDelete, onStartEdit }) => {
   return (

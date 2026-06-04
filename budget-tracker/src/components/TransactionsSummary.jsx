@@ -1,14 +1,13 @@
 const TransactionsSummary = ({ transactionList }) => {
-  console.log(transactionList);
   const income = transactionList.reduce(
     (acc, transaction) =>
-      transaction.type === "income" ? acc + transaction.amount : acc,
+      transaction.type === "Income" ? acc + transaction.amount : acc,
     0,
   );
 
   const expenses = transactionList.reduce(
     (acc, transaction) =>
-      transaction.type === "expense" ? acc + transaction.amount : acc,
+      transaction.type === "Expense" ? acc + transaction.amount : acc,
     0,
   );
 

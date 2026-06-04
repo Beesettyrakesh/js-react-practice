@@ -3,6 +3,7 @@ import TransactionsInput from "./TransactionsInput";
 
 const TransactionsList = ({
   transactionList,
+  totalTransactions,
   onTransactionDelete,
   editingId,
   editTransaction,
@@ -10,7 +11,14 @@ const TransactionsList = ({
   onStartEdit,
   onSaveEdit,
   onCancelEdit,
+  error,
 }) => {
+  if (totalTransactions === 0)
+    return <p>No transactions yet. Add one above!</p>;
+
+  if (transactionList.length === 0)
+    return <p>No transactions match this filter</p>;
+
   return (
     <div>
       {transactionList.map((transaction) =>
@@ -21,6 +29,7 @@ const TransactionsList = ({
             mode="edit"
             onSaveEdit={onSaveEdit}
             onCancelEdit={onCancelEdit}
+            error={error}
             key={transaction.id}
           />
         ) : (

@@ -5,6 +5,7 @@ const TransactionsInput = ({
   onSaveEdit,
   onCancelEdit,
   mode,
+  error,
 }) => {
   return (
     <div style={{ marginBottom: "10px" }}>
@@ -84,6 +85,8 @@ const TransactionsInput = ({
           </button>
         </>
       )}
+
+      {error && <h4>{error}</h4>}
     </div>
   );
 };
