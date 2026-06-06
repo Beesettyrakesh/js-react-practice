@@ -1,12 +1,25 @@
-const TransactionsInput = ({
-  transaction,
-  onAddTransaction,
-  onInputChange,
-  onSaveEdit,
-  onCancelEdit,
-  mode,
-  error,
-}) => {
+import { useTransactions } from "../hooks/useTransaction";
+
+const TransactionsInput = ({ mode }) => {
+  const {
+    transaction,
+    editTransaction,
+    handleAddTransaction,
+    handleInputChange,
+    handleEditInputChange,
+    addError,
+    editError,
+    handleSaveEdit,
+    handleCancelEdit,
+  } = useTransactions();
+
+  const currentTransaction = mode === "add" ? transaction : editTransaction;
+
+  const currentInputHandler =
+    mode === "add" ? handleInputChange : handleEditInputChange;
+
+  const currentError = mode === "add" ? addError : editError;
+
   return (
     <div style={{ marginBottom: "10px" }}>
       <label>
@@ -15,8 +28,8 @@ const TransactionsInput = ({
           name="description"
           type="text"
           placeholder="Description"
-          value={transaction.description}
-          onChange={onInputChange}
+          value={currentTransaction.description}
+          onChange={currentInputHandler}
           style={{ marginRight: "10px" }}
         />
       </label>
@@ -27,8 +40,8 @@ const TransactionsInput = ({
           name="amount"
           type="number"
           placeholder="Amount"
-          value={transaction.amount}
-          onChange={onInputChange}
+          value={currentTransaction.amount}
+          onChange={currentInputHandler}
           style={{ marginRight: "10px" }}
         />
       </label>
@@ -37,8 +50,8 @@ const TransactionsInput = ({
         Type:
         <select
           name="type"
-          value={transaction.type}
-          onChange={onInputChange}
+          value={currentTransaction.type}
+          onChange={currentInputHandler}
           style={{ marginRight: "10px" }}
         >
           <option value="Income">Income</option>
@@ -52,8 +65,8 @@ const TransactionsInput = ({
           name="category"
           type="text"
           placeholder="Category"
-          value={transaction.category}
-          onChange={onInputChange}
+          value={currentTransaction.category}
+          onChange={currentInputHandler}
           style={{ marginRight: "10px" }}
         />
       </label>
@@ -61,7 +74,7 @@ const TransactionsInput = ({
       {mode === "add" ? (
         <button
           type="button"
-          onClick={onAddTransaction}
+          onClick={handleAddTransaction}
           style={{ marginRight: "10px" }}
         >
           Add
@@ -70,7 +83,7 @@ const TransactionsInput = ({
         <>
           <button
             type="button"
-            onClick={() => onCancelEdit()}
+            onClick={handleCancelEdit}
             style={{ marginRight: "10px" }}
           >
             Cancel
@@ -78,7 +91,7 @@ const TransactionsInput = ({
 
           <button
             type="button"
-            onClick={() => onSaveEdit()}
+            onClick={handleSaveEdit}
             style={{ marginRight: "10px" }}
           >
             Save
@@ -86,7 +99,7 @@ const TransactionsInput = ({
         </>
       )}
 
-      {error && <h4>{error}</h4>}
+      {currentError && <h4 style={{ color: "red" }}>{currentError}</h4>}
     </div>
   );
 };

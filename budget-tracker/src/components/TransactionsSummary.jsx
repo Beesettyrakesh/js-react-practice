@@ -1,4 +1,8 @@
-const TransactionsSummary = ({ transactionList }) => {
+import { useTransactions } from "../hooks/useTransaction";
+
+const TransactionsSummary = () => {
+  const { transactionList } = useTransactions();
+
   const income = transactionList.reduce(
     (acc, transaction) =>
       transaction.type === "Income" ? acc + transaction.amount : acc,

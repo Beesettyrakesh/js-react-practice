@@ -1,6 +1,10 @@
+import { useTransactions } from "../hooks/useTransaction";
+
 const dateFormatter = new Intl.DateTimeFormat("en-IN");
 
-const TransactionItem = ({ transaction, onTransactionDelete, onStartEdit }) => {
+const TransactionItem = ({ transaction }) => {
+  const { handleDeleteTransaction, handleStartEdit } = useTransactions();
+
   return (
     <div>
       <p style={{ marginRight: "10px", fontWeight: "bold" }}>
@@ -15,7 +19,7 @@ const TransactionItem = ({ transaction, onTransactionDelete, onStartEdit }) => {
 
       <button
         type="button"
-        onClick={() => onStartEdit(transaction)}
+        onClick={() => handleStartEdit(transaction)}
         style={{ marginRight: "10px" }}
       >
         Edit
@@ -23,7 +27,7 @@ const TransactionItem = ({ transaction, onTransactionDelete, onStartEdit }) => {
 
       <button
         type="button"
-        onClick={() => onTransactionDelete(transaction.id)}
+        onClick={() => handleDeleteTransaction(transaction.id)}
         style={{ marginRight: "10px" }}
       >
         Delete
