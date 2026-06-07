@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useReducer, useState } from "react";
 import { TransactionContext } from "./TransactionContext";
 
 const initialTransactionData = {
@@ -8,7 +8,20 @@ const initialTransactionData = {
   category: "",
 };
 
+const initialState = {
+  transaction: initialTransactionData,
+  transactionList: [],
+  filter: "all",
+  editingId: null,
+  editTransaction: null,
+  addError: null,
+  editError: null,
+};
+
+function transactionReducer(state, action) {}
+
 export const TransactionProvider = ({ children }) => {
+  const [state, dispatch] = useReducer(transactionReducer, initialState);
   const [transaction, setTransaction] = useState(initialTransactionData);
   const [transactionList, setTransactionList] = useState(() => {
     const cachedTransactions = localStorage.getItem("transactions");
