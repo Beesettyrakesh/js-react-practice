@@ -1,4 +1,4 @@
-import { useEffect, useReducer, useState } from "react";
+import { useEffect, useReducer } from "react";
 import { TransactionContext } from "./TransactionContext";
 
 const initialTransactionData = {
@@ -8,37 +8,140 @@ const initialTransactionData = {
   category: "",
 };
 
-const initialState = {
-  transaction: initialTransactionData,
-  transactionList: [],
-  filter: "all",
-  editingId: null,
-  editTransaction: null,
-  addError: null,
-  editError: null,
-};
+function init(initialTransaction) {
+  const cachedTransactions = localStorage.getItem("transactions");
 
-function transactionReducer(state, action) {}
+  return {
+    transaction: initialTransaction,
+    transactionList:
+      cachedTransactions !== null
+        ? JSON.parse(cachedTransactions).map((transaction) => ({
+            ...transaction,
+            createdAt: new Date(transaction.createdAt),
+          }))
+        : [],
+    filter: "all",
+    editingId: null,
+    editTransaction: null,
+    addError: null,
+    editError: null,
+  };
+}
+
+function transactionReducer(state, action) {
+  switch (action.type) {
+    case "SET_FORM_FIELD":
+      return {
+        ...state,
+        transaction: {
+          ...state.transaction,
+          [action.payload.name]: action.payload.value,
+        },
+      };
+
+    case "SET_EDIT_FIELD":
+      return {
+        ...state,
+        editTransaction: {
+          ...state.editTransaction,
+          [action.payload.name]: action.payload.value,
+        },
+      };
+
+    case "ADD_TRANSACTION":
+      return {
+        ...state,
+        transactionList: [...state.transactionList, action.payload],
+        transaction: initialTransactionData,
+      };
+
+    case "DELETE_TRANSACTION": {
+      const updatedTransactionList = state.transactionList.filter(
+        (transactionItem) => transactionItem.id !== action.payload,
+      );
+      return {
+        ...state,
+        transactionList: updatedTransactionList,
+      };
+    }
+
+    case "START_EDIT":
+      return {
+        ...state,
+        editingId: action.payload.id,
+        editTransaction: { ...action.payload },
+      };
+
+    case "SAVE_EDIT": {
+      const updatedTransactionList = state.transactionList.map((transaction) =>
+        transaction.id === action.payload.id ? action.payload : transaction,
+      );
+      return {
+        ...state,
+        transactionList: updatedTransactionList,
+        editingId: null,
+        editTransaction: null,
+      };
+    }
+
+    case "CANCEL_EDIT":
+      return {
+        ...state,
+        editingId: null,
+        editTransaction: null,
+      };
+
+    case "SET_FILTER":
+      return {
+        ...state,
+        filter: action.payload,
+      };
+
+    case "SET_ADD_ERROR":
+      return {
+        ...state,
+        addError: action.payload,
+      };
+
+    case "SET_EDIT_ERROR":
+      return {
+        ...state,
+        editError: action.payload,
+      };
+
+    case "CLEAR_ADD_ERROR":
+      return {
+        ...state,
+        addError: null,
+      };
+
+    case "CLEAR_EDIT_ERROR":
+      return {
+        ...state,
+        editError: null,
+      };
+
+    default:
+      return state;
+  }
+}
 
 export const TransactionProvider = ({ children }) => {
-  const [state, dispatch] = useReducer(transactionReducer, initialState);
-  const [transaction, setTransaction] = useState(initialTransactionData);
-  const [transactionList, setTransactionList] = useState(() => {
-    const cachedTransactions = localStorage.getItem("transactions");
-    if (cachedTransactions !== null) {
-      const parsedTransactions = JSON.parse(cachedTransactions);
-      return parsedTransactions.map((transaction) => ({
-        ...transaction,
-        createdAt: new Date(transaction.createdAt),
-      }));
-    }
-    return [];
-  });
-  const [filter, setFilter] = useState("all");
-  const [editingId, setEditingId] = useState(null);
-  const [editTransaction, setEditTransaction] = useState(null);
-  const [addError, setAddError] = useState(null);
-  const [editError, setEditError] = useState(null);
+  const [state, dispatch] = useReducer(
+    transactionReducer,
+    initialTransactionData,
+    init,
+  );
+
+  const {
+    transaction,
+    transactionList,
+    filter,
+    editingId,
+    editTransaction,
+    addError,
+    editError,
+  } = state;
 
   const filteredTransactions =
     filter === "income"
@@ -57,25 +160,48 @@ export const TransactionProvider = ({ children }) => {
     if (transaction.description.trim() === "") {
       return "Description is required";
     }
-
     if (transaction.amount === "") {
       return "Amount is required";
     }
-
     if (Number(transaction.amount) <= 0) {
       return "Amount must be a positive value";
     }
-
     if (transaction.category.trim() === "") {
       return "Category is required";
     }
-
     return null;
   }
 
+  function handleInputChange(event) {
+    const { name, value } = event.target;
+
+    dispatch({
+      type: "CLEAR_ADD_ERROR",
+    });
+
+    dispatch({
+      type: "SET_FORM_FIELD",
+      payload: { name, value },
+    });
+  }
+
+  function handleEditInputChange(event) {
+    const { name, value } = event.target;
+
+    dispatch({
+      type: "CLEAR_EDIT_ERROR",
+    });
+
+    dispatch({
+      type: "SET_EDIT_FIELD",
+      payload: { name, value },
+    });
+  }
+
   function handleAddTransaction() {
-    const validationError = validateTransaction(transaction);
-    if (!validationError) {
+    const errorMessage = validateTransaction(transaction);
+
+    if (!errorMessage) {
       const newTransaction = {
         ...transaction,
         id: crypto.randomUUID(),
@@ -83,75 +209,76 @@ export const TransactionProvider = ({ children }) => {
         createdAt: new Date(),
       };
 
-      setTransactionList((prev) => [...prev, newTransaction]);
-      setTransaction(initialTransactionData);
-      setAddError(null);
+      dispatch({
+        type: "ADD_TRANSACTION",
+        payload: newTransaction,
+      });
+
+      dispatch({
+        type: "CLEAR_ADD_ERROR",
+      });
     } else {
-      setAddError(validationError);
+      dispatch({
+        type: "SET_ADD_ERROR",
+        payload: errorMessage,
+      });
     }
   }
 
-  function handleInputChange(event) {
-    const { name, value } = event.target;
-
-    setAddError(null);
-    setTransaction((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  }
-
   function handleDeleteTransaction(transactionId) {
-    setTransactionList((prev) =>
-      prev.filter((transactionItem) => transactionItem.id !== transactionId),
-    );
-  }
-
-  function handleTransactionsFilter(selectedFilter) {
-    setFilter(selectedFilter);
-  }
-
-  function handleStartEdit(transaction) {
-    setEditingId(transaction.id);
-    setEditTransaction({ ...transaction });
-  }
-
-  function handleEditInputChange(event) {
-    const { name, value } = event.target;
-
-    setEditError(null);
-    setEditTransaction((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    dispatch({
+      type: "DELETE_TRANSACTION",
+      payload: transactionId,
+    });
   }
 
   function handleSaveEdit() {
-    const validationError = validateTransaction(editTransaction);
+    const errorMessage = validateTransaction(editTransaction);
 
-    if (!validationError) {
+    if (!errorMessage) {
       const updatedTransaction = {
         ...editTransaction,
         amount: Number(editTransaction.amount),
       };
 
-      const updatedTransactions = transactionList.map((transaction) =>
-        transaction.id === editingId ? updatedTransaction : transaction,
-      );
+      dispatch({
+        type: "SAVE_EDIT",
+        payload: updatedTransaction,
+      });
 
-      setTransactionList(updatedTransactions);
-      setEditingId(null);
-      setEditTransaction(null);
-      setEditError(null);
+      dispatch({
+        type: "CLEAR_EDIT_ERROR",
+      });
     } else {
-      setEditError(validationError);
+      dispatch({
+        type: "SET_EDIT_ERROR",
+        payload: errorMessage,
+      });
     }
   }
 
+  function handleStartEdit(transaction) {
+    dispatch({
+      type: "START_EDIT",
+      payload: transaction,
+    });
+  }
+
   function handleCancelEdit() {
-    setEditingId(null);
-    setEditTransaction(null);
-    setEditError(null);
+    dispatch({
+      type: "CANCEL_EDIT",
+    });
+
+    dispatch({
+      type: "CLEAR_EDIT_ERROR",
+    });
+  }
+
+  function handleTransactionsFilter(filterValue) {
+    dispatch({
+      type: "SET_FILTER",
+      payload: filterValue,
+    });
   }
 
   return (
