@@ -1,5 +1,6 @@
 import { useEffect, useReducer } from "react";
 import { TransactionContext } from "./TransactionContext";
+import validateTransaction from "../utils/validateTransaction";
 
 const initialTransactionData = {
   description: "",
@@ -155,22 +156,6 @@ export const TransactionProvider = ({ children }) => {
   useEffect(() => {
     localStorage.setItem("transactions", JSON.stringify(transactionList));
   }, [transactionList]);
-
-  function validateTransaction(transaction) {
-    if (transaction.description.trim() === "") {
-      return "Description is required";
-    }
-    if (transaction.amount === "") {
-      return "Amount is required";
-    }
-    if (Number(transaction.amount) <= 0) {
-      return "Amount must be a positive value";
-    }
-    if (transaction.category.trim() === "") {
-      return "Category is required";
-    }
-    return null;
-  }
 
   function handleInputChange(event) {
     const { name, value } = event.target;
