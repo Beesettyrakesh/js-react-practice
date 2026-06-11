@@ -2,14 +2,17 @@ import { useEffect, useState } from "react";
 import { fetchRepos, fetchUser, searchUsers } from "./api.js";
 import SearchBar from "./components/SearchBar";
 import UserSearchResults from "./components/UserSearchResults.jsx";
+import useDebounce from "./hooks/useDebounce.js";
+import useLocalStorage from "./hooks/useLocalStorage.js";
 
 function App() {
-  const [searchKeyWord, setSearchKeyWord] = useState("");
+  const [searchKeyWord, setSearchKeyWord] = useLocalStorage("lastSearch", "");
   const [searchResults, setSearchResults] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
   const [selectedRepos, setSelectedRepos] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const debouncedSearch = useDebounce(searchKeyWord, 500);
 
   useEffect(() => {
     if (!error) return;
@@ -20,6 +23,10 @@ function App() {
 
     return () => clearTimeout(timer);
   }, [error]);
+
+  useEffect(() => {
+    
+  }, [debouncedSearch]);
 
   async function handleSearch() {
     if (searchKeyWord.trim() === "") {
