@@ -1,11 +1,5 @@
-// Props: searchKeyWord (string), onInputChange (function), onSearch (function), isLoading (boolean)
-const SearchBar = ({ searchKeyWord, onInputChange, onSearch, isLoading }) => {
-  function handleKeyDown(event) {
-    if (event.key === "Enter") {
-      onSearch();
-    }
-  }
-
+// Props: searchKeyWord (string), onInputChange (function)
+const SearchBar = ({ searchKeyWord, onInputChange }) => {
   return (
     <div>
       <input
@@ -13,12 +7,7 @@ const SearchBar = ({ searchKeyWord, onInputChange, onSearch, isLoading }) => {
         placeholder="Search"
         value={searchKeyWord}
         onChange={(event) => onInputChange(event.target.value)}
-        onKeyDown={handleKeyDown}
       />
-
-      <button onClick={onSearch} disabled={isLoading}>
-        Search
-      </button>
     </div>
   );
 };

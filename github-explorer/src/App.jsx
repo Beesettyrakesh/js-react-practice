@@ -25,31 +25,30 @@ function App() {
   }, [error]);
 
   useEffect(() => {
-    
-  }, [debouncedSearch]);
+    const fetchUsers = async () => {
+      if (debouncedSearch.trim() === "") {
+        setSearchResults([]);
+        return;
+      }
 
-  async function handleSearch() {
-    if (searchKeyWord.trim() === "") {
-      setError("Please enter a search term");
+      setError(null);
+      setSelectedUser(null);
+      setSelectedRepos([]);
       setSearchResults([]);
-      return;
-    }
+      setIsLoading(true);
 
-    setError(null);
-    setSelectedUser(null);
-    setSelectedRepos([]);
-    setSearchResults([]);
-    setIsLoading(true);
+      try {
+        const data = await searchUsers(debouncedSearch);
+        setSearchResults(data);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-    try {
-      const data = await searchUsers(searchKeyWord);
-      setSearchResults(data);
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setIsLoading(false);
-    }
-  }
+    fetchUsers();
+  }, [debouncedSearch]);
 
   async function handleUserClick(username) {
     setIsLoading(true);
@@ -92,8 +91,6 @@ function App() {
       <SearchBar
         searchKeyWord={searchKeyWord}
         onInputChange={handleSearchInput}
-        onSearch={handleSearch}
-        isLoading={isLoading}
       />
 
       <UserSearchResults
