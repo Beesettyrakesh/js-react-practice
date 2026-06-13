@@ -1,18 +1,50 @@
 import { useEffect, useState } from "react";
-import { fetchRepos, fetchUser, searchUsers } from "./api.js";
+import { searchUsers } from "./api.js";
 import SearchBar from "./components/SearchBar";
 import UserSearchResults from "./components/UserSearchResults.jsx";
 import useDebounce from "./hooks/useDebounce.js";
+import useFetch from "./hooks/useFetch.js";
 import useLocalStorage from "./hooks/useLocalStorage.js";
 
 function App() {
+  const baseUrl = "https://api.github.com";
   const [searchKeyWord, setSearchKeyWord] = useLocalStorage("lastSearch", "");
   const [searchResults, setSearchResults] = useState([]);
-  const [selectedUser, setSelectedUser] = useState(null);
-  const [selectedRepos, setSelectedRepos] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [selectedUsername, setSelectedUsername] = useState(null);
   const debouncedSearch = useDebounce(searchKeyWord, 500);
+
+  const {
+    data: selectedUser,
+    isLoading: userLoading,
+    error: userError,
+  } = useFetch(
+    selectedUsername ? `${baseUrl}/users/${selectedUsername}` : null,
+  );
+  const profileUser = selectedUsername ? selectedUser : null;
+
+  const {
+    data: repos,
+    isLoading: reposLoading,
+    error: reposError,
+  } = useFetch(
+    selectedUsername
+      ? `${baseUrl}/users/${selectedUsername}/repos?sort=updated&per_page=5`
+      : null,
+  );
+
+  const userRepos = selectedUsername
+    ? repos
+      ? repos.map(({ id, name, description, stargazers_count, html_url }) => ({
+          id,
+          name,
+          description,
+          stargazers_count,
+          html_url,
+        }))
+      : []
+    : null;
 
   useEffect(() => {
     if (!error) return;
@@ -32,8 +64,7 @@ function App() {
       }
 
       setError(null);
-      setSelectedUser(null);
-      setSelectedRepos([]);
+      setSelectedUsername(null);
       setSearchResults([]);
       setIsLoading(true);
 
@@ -50,36 +81,15 @@ function App() {
     fetchUsers();
   }, [debouncedSearch]);
 
-  async function handleUserClick(username) {
-    setIsLoading(true);
+  const showLoading = isLoading || userLoading || reposLoading;
+  const showError = error || userError || reposError;
 
-    try {
-      const [{ login, bio, followers, avatar_url }, userReposData] =
-        await Promise.all([fetchUser(username), fetchRepos(username)]);
-
-      const user = { login, bio, followers, avatar_url };
-      const repos = userReposData.map(
-        ({ id, name, description, stargazers_count, html_url }) => ({
-          id,
-          name,
-          description,
-          stargazers_count,
-          html_url,
-        }),
-      );
-
-      setSelectedUser(user);
-      setSelectedRepos(repos);
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setIsLoading(false);
-    }
+  function handleUserClick(username) {
+    setSelectedUsername(username);
   }
 
   function handleBackBtn() {
-    setSelectedUser(null);
-    setSelectedRepos([]);
+    setSelectedUsername(null);
   }
 
   function handleSearchInput(value) {
@@ -95,10 +105,10 @@ function App() {
 
       <UserSearchResults
         searchResults={searchResults}
-        selectedUser={selectedUser}
-        selectedRepos={selectedRepos}
-        isLoading={isLoading}
-        error={error}
+        selectedUser={profileUser}
+        selectedRepos={userRepos}
+        isLoading={showLoading}
+        error={showError}
         onUserClick={handleUserClick}
         onBack={handleBackBtn}
         query={searchKeyWord}
